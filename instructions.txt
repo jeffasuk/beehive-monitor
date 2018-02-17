@@ -1,0 +1,113 @@
+Description
+
+The Beehive Monitor is based on the ESP8266 WiFi chip. It is capable of monitoring several sensors and uploading results to a webserver via WiFi. It is specifically designed to be a low power device, able to run for a useful period on batteries. It can also be mains powered via a DC adaptor if required.
+
+How to set it up.
+
+A new Beehive Monitor comes set up ready to be configured for your WiFi and webserver, via its own WiFi network and webserver. When you switch it on, the blue LED will flash quickly, showing that it is in set-up mode.
+
+Use your smartphone or other WiFi device to look for the Beehive Monitor's WiFi access point. It is probably most convenient to be watching that display when you switch the Beehive Monitor on; or you can press and release its reset button. The WiFi network name is "beehivemonitorXX", where the "XX" are two letters that will generally be unique to your device. Any lack of uniqueness will matter only if another Beehive Monitor nearby is also in set-up mode and happens to have the same letters.
+
+Connect to the WiFi network. The password is beehiveESP. (This network is used only during set-up, so does not need to be highly secure, but you can change the password if you want. See below.)
+
+Open a web browser and go to http://192.168.4.1/
+
+This will give you the set-up page, where you can enter the following details:
+
+WiFi SSID
+    The SSID (name) of your WiFi network, that the Beehive Monitor will connect to.
+WiFi password
+    The password of your WiFi network.
+Unit identifier
+    This is any name that you choose. It will be sent with each configuration request and monitoring report. It will enable your webserver to distinguish between multiple Monitors if you have more than one.
+Server hostname
+    The hostname of the server that will receive messages from the Monitor.
+Server port
+    The port on that server (normally 80).
+Settings path
+    The 'path' part of the URL for getting new settings from the webserver.
+Report path
+    The 'path' part of the URL for sending reports to the webserver.
+Password for the set-up WiFi.
+    This is to replace the "beehiveESP" password. If you do change this, be sure not to forget it or you will be unable to redo any set-up on the Monitor.
+
+When you send the new settings, the Monitor will store them and will try to connect via your WiFi to your webserver. It will display a confirmation page telling you the results. This page also includes the settings form, so that you can change things if there was an error. If the Monitor successfully connected to your webserver, it will take down its own WiFi network and switch to normal operation, communicating periodically with your webserver.
+
+Normal operation
+
+Once set up, the Monitor enters a continual loop doing the following:
+- Connects to WiFi.
+- Connects to webserver to ask for settings (described below).
+- Records and applies any changed settings.
+- Collects readings from all sensors.
+- Sends a report to the webserver.
+- Sleeps for a period.
+
+  LED signalling
+
+Connecting to WiFi                      single flashes
+Sending config request                  double flashes
+Reading sensors                         on
+Sending report                          triple flashes
+Waiting for next cycle (before sleep)   on/off equally at half a second each
+Deep sleep                              off
+
+Webserver configuration
+
+In order to control settings and collect reports, your webserver needs to provide handling for the two request paths. How exactly you do this depends on what sort of webserver you are using. The simplest way is probably with CGI scripts. What is described here is the format of the requests that the Monitor sends, and what it expects in the response.
+
+Configuration request
+
+This is an HTTP GET request with one optional value in a query string, "ident" giving the unit identifier of the Monitor if it was set during set-up. There will also be an "If-None-Match" header giving any ETag value that the webserver may have sent in a previous response. The purpose of this is to save the webserver having to send settings if there has been no change. You do not have to use this if you don't want to.
+Example:
+GET /cgi-bin/getsettings.cgi?ident=beehive-one HTTP/1.0
+If-None-Match: abc12345
+
+The response is expected to be of type text/plain and to consist of zero or more lines of the form name=value. Any changed settings are applied immediately and also saved for future use. As described above, the value in any ETag header will be sent in an If-None-Match header on any subsequent configuration requests.
+
+Available settings
+
+serial  As described above
+port    As Server port in set-up
+time_between_reports    How long to leave, in seconds, between reports
+time_to_sleep   How much of the time between reports to go into deep sleep, also in seconds.
+ssid    As WiFi SSID in set-up
+rpthost As Server hostname in set-up
+rptpath As Report path in set-up
+cfgpath As Settings path in set-up
+ident   As Unit identifier in set-up
+
+Notes on sleeping: In practical use when generating relatively slow reports on battery power, there is little point in setting time_between_reports to anything greater than time_to_sleep, since the Monitor would be awake but not doing anything during the excess time. So the recommendation is to leave it unchanged (at the default of zero). 
+
+However, it does becaome useful if you are running on mains power and want relatively rapid reporting, e.g. every few seconds. In that scenario, there is little point putting the Monitor into deep sleep, so set time_to_sleep to zero and time_between_reports to your desired value.
+
+Report format
+
+Reports are sent as an HTTP GET request with all values in a query-string. The individual items are:
+
+ident   As described above
+hum Humidity
+temp    Temperature from the temperature and humidity sensor
+t1  Temperature from the first temperature-only sensor
+t2  Temperature from the second temperature-only sensor
+t3  Temperature from the third temperature-only sensor
+
+All numbers are sent as decimals.
+All temperatures are in Celsius.
+
+Example: http://my-server.me.org.uk/cgi-bin/beehive.cgi?ident=Number+one&hum=43.000&temp=21.000&t1=20.037&t2=19.0
+
+Repeating the set-up stage
+
+If you should want to go through the set-up again (e.g. if your WiFi access point has been replaced), you can force the Monitor into set-up mode by holding down the "set-up" button while switching it on or resetting it with the "reset" button. Hold the "set-up" button down until the blue LED starts flashing quickly. Then proceed as for initial set-up.
+
+Advanced settings
+
+dht22_pin
+onewire_pin
+rotpass SSID of the WiFi network to use
+rotlpswd
+rot
+
+Notes on passwords: It is not a good idea to transmit or store passwords without some sort of encryption, or at least obfuscation. There are two passwords involved in this system, the Monitor's own password and that of the WiFi network that it is going to use. As described above, the Monitor's own password is not very important, but the WiFi network's password should be protected to prevent unauthorized access. It is not possible to put strong encryption onto the Monitor, not least because the Monitor itself needs to decrypt the password in order to use it to connect to the WiFi. So it uses a simple rotation encryption. While this does not provide a lot of protection, it does mean that, even if someone manages to get the memory contents from the monitor, or snoop on the network traffic, they will not be able to find the password just by looking for an obvious character string.
+
