@@ -31,8 +31,8 @@ struct PERSISTENT_DATA persistent_data = {
 // names of values that can be set from server and get saved to EEPROM
 PERSISTENT_INFO persistents[] = {
     {PERS_UINT16, "port",                   &persistent_data.port},
-    {PERS_UINT8,  "time_to_sleep",          &persistent_data.time_to_sleep},
-    {PERS_UINT8,  "time_between_reports",   &persistent_data.time_between_reports},
+    {PERS_UINT32, "time_to_sleep",          &persistent_data.time_to_sleep},
+    {PERS_UINT32, "time_between_reports",   &persistent_data.time_between_reports},
     {PERS_UINT8,  "dht22_pin",              &persistent_data.dht22_pin},
     {PERS_UINT8,  "onewire_pin",            &persistent_data.onewire_pin},
     {PERS_INT8,   "rot",                    &persistent_data.rot},

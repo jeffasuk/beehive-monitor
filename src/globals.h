@@ -30,8 +30,8 @@ extern char *p_onewireids;
 
 struct PERSISTENT_DATA {    // this structure can be stored in EEPROM
     uint16_t port;
-    uint8_t time_to_sleep;
-    uint8_t time_between_reports;
+    uint32_t time_to_sleep;
+    uint32_t time_between_reports;
     uint8_t dht22_pin;
     uint8_t onewire_pin;
     int8_t  rot;

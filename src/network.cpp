@@ -22,6 +22,7 @@ char sensors_page_xml[] =
         "<reading type=\"temperature\" ident=\"DHT\" desc=\"%%DHTLOC%%\" value=\"%%DHTTEMP%%\"/>\n"
         "<reading type=\"temperature\" ident=\"TEMPID1\" desc=\"%%TEMPDESC1%%\" value=\"%%TEMP1%%\"/>\n"
         "<reading type=\"temperature\" ident=\"TEMPID2\" desc=\"%%TEMPDESC2%%\" value=\"%%TEMP2%%\"/>\n"
+        "<reading type=\"temperature\" ident=\"TEMPID3\" desc=\"%%TEMPDESC3%%\" value=\"%%TEMP3%%\"/>\n"
 ;
 
 static char *unrot(char *rotated_pswd)

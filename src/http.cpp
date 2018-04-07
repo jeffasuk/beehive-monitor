@@ -141,7 +141,7 @@ char home_page[] = \
         "</ul>\n"
         ;
 char settings_form_page[] = \
-        "<form method=\"POST\" action=setup\"/\" >\n"
+        "<form method='POST' action='/setup' >\n"
         "%%EXTRA%%"
         "<table>\n"
         "<tr><td>WiFi SSID</td><td><input type=\"text\" name=\"ssid\" width=\"30\" value=\"%%SSID%%\"></td></tr>\n"
@@ -167,6 +167,7 @@ char sensors_page[] = \
         "<tr><td>Temperature</td><td>%%DHTLOC%%</td><td>%%DHTTEMP%%</td></tr>\n"
         "<tr><td>Temperature</td><td><!-- %%TEMPID1%% -->%%TEMPDESC1%%</td><td>%%TEMP1%%</td></tr>\n"
         "<tr><td>Temperature</td><td><!-- %%TEMPID2%% -->%%TEMPDESC2%%</td><td>%%TEMP2%%</td></tr>\n"
+        "<tr><td>Temperature</td><td><!-- %%TEMPID3%% -->%%TEMPDESC3%%</td><td>%%TEMP3%%</td></tr>\n"
         "</table>\n"
         ;
 static enum {GET_FIRST_LINE, GET_HEADERS, GET_BODY} http_message_state;

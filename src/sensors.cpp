@@ -23,7 +23,7 @@ static char *getFriendlyOneWireName(unsigned char addr[8])
     static int buflen = 0;
     static char *single_buffer_for_friendly_names = 0;
     int required_length;
-    char addr_buf[18];  // 8 hex chars plus a '=' and a NUL
+    char addr_buf[18];  // 16 hex chars plus a '=' and a NUL
     char *p;
     formatAddr(addr_buf, addr);
     addr_buf[16] = '=';
@@ -50,7 +50,7 @@ static char *getFriendlyOneWireName(unsigned char addr[8])
             single_buffer_for_friendly_names = (char*)realloc(single_buffer_for_friendly_names, required_length);
             buflen = required_length;
         }
-        sprintf(single_buffer_for_friendly_names, "<!-- %s -->", addr_buf);
+        sprintf(single_buffer_for_friendly_names, "%s ", addr_buf);
         strncat(single_buffer_for_friendly_names, p, length_of_friendly_name);
     }
     else
@@ -70,16 +70,22 @@ static char *getFriendlyOneWireName(unsigned char addr[8])
 
 void generateSensorPage(String *page, SENSOR_DATA sensor_data)
 {
-    char    print_buf[17]; // big enough for int or float or OneWire address
+    char    print_buf[17];  // big enough for int or float or OneWire address
+    char    token_buf[17];  // big enough for biggest markup token
+    int     tmp_idx;
     page->replace("%%HUM%%",        printff(print_buf, sensor_data.hum_and_temp.humidity));
     page->replace("%%DHTTEMP%%",    printff(print_buf, sensor_data.hum_and_temp.temperature_c));
     page->replace("%%DHTLOC%%",     p_dhtlocation ? p_dhtlocation : "DHT");
-    page->replace("%%TEMPID1%%",    formatAddr(print_buf, sensor_data.temperature[0].addr));
-    page->replace("%%TEMPDESC1%%",  getFriendlyOneWireName(sensor_data.temperature[0].addr));
-    page->replace("%%TEMP1%%",      printff(print_buf, sensor_data.temperature[0].temperature_c));
-    page->replace("%%TEMPID2%%",    formatAddr(print_buf, sensor_data.temperature[1].addr));
-    page->replace("%%TEMPDESC2%%",  getFriendlyOneWireName(sensor_data.temperature[1].addr));
-    page->replace("%%TEMP2%%",      printff(print_buf, sensor_data.temperature[1].temperature_c));
+
+    for (tmp_idx = 0; tmp_idx < 3; ++tmp_idx)
+    {
+        sprintf(token_buf, "%%%%TEMPID%d%%%%", tmp_idx + 1);
+        page->replace(token_buf,    formatAddr(print_buf, sensor_data.temperature[tmp_idx].addr));
+        sprintf(token_buf, "%%%%TEMPDESC%d%%%%", tmp_idx + 1);
+        page->replace(token_buf,    getFriendlyOneWireName(sensor_data.temperature[tmp_idx].addr));
+        sprintf(token_buf, "%%%%TEMP%d%%%%", tmp_idx + 1);
+        page->replace(token_buf,    printff(print_buf, sensor_data.temperature[tmp_idx].temperature_c));
+    }
 }
 
 int readDsTemp(OneWire *ds, int reset_search, TEMPERATURE_DATA *res)
@@ -147,8 +153,14 @@ int readDsTemp(OneWire *ds, int reset_search, TEMPERATURE_DATA *res)
     res->temperature_c = (float)( ((data[1] << 8) + data[0]) & 0xffff) / 16.0;
     res->temperature_f = res->temperature_c * 1.8 + 32.0;
 #ifndef QUIET
-    Serial.print("temp ");
-    Serial.println(res->temperature_c);
+    {
+        char num_buf[7];
+        Serial.print("temp (");
+        sprintf(num_buf, "0x%x", ((data[1] << 8) + data[0]) & 0xffff);
+        Serial.print(num_buf);
+        Serial.print(") ");
+        Serial.println(res->temperature_c);
+    }
 #endif
     return 1;   // try to find next sensor
 }

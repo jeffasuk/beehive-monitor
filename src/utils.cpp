@@ -3,23 +3,24 @@
   jeff at jamcupboard.co.uk
 */
 #include <stdio.h>
+#include <string.h>
+
+// I want %f, but sprintf on ESP doesn't have that capability
 char *printff(char *buf, float f)
 {
-    char mybuf[5];
-    int int_part;
-    int float_part;
-    int_part = (int)f;
-    float_part = (int)( f - int_part ) * 100 ;
-    sprintf(mybuf, "%d", float_part + 1000);
-    if (mybuf[3] == '0')
+    char *dot_pos;
+    if (f < 1.0 || f > 999.0)
     {
-        // truncate unnecessary trailing zeroes
-        if (mybuf[2] == '0')
-            mybuf[2] = 0;
-        else
-            mybuf[3] = 0;
+        // out of range
+        *buf = 0;
+        return buf;
     }
-    sprintf(buf, "%d.%s", int_part, mybuf + 1);
+    sprintf(buf, "%d", int(f * 100 + 0.005));
+    dot_pos = buf + strlen(buf);
+    *(dot_pos+1) = 0;
+    *dot_pos     = *(dot_pos-1);
+    *(dot_pos-1) = *(dot_pos-2);
+    *(dot_pos-2) = '.';
     return buf; // not strictly necessary, as caller has buf already, but a programming convenience.
 }
 

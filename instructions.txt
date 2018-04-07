@@ -1,3 +1,7 @@
+Licensed under GNU General Public License v3.0
+  See https://github.com/jeffasuk/beehive-monitor/blob/master/LICENSE
+  jeff at jamcupboard.co.uk
+
 Description
 
 The Beehive Monitor is based on the ESP8266 WiFi chip. It is capable of monitoring several sensors and uploading results to a webserver via WiFi. It is specifically designed to be a low power device, able to run for a useful period on batteries. It can also be mains powered via a DC adaptor if required.
